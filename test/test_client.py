@@ -15,7 +15,7 @@ class TestSteamClient(TestCase):
     def setUpClass(cls):
         cls.credentials = load_credentials()[0]
         dirname = os.path.dirname(os.path.abspath(__file__))
-        cls.steam_guard_file = dirname + '/../secrets/Steamguard.txt'
+        cls.steam_guard_file = f'{dirname}/../secrets/Steamguard.txt'
 
     def test_get_steam_id(self):
         client = SteamClient(self.credentials.api_key)
@@ -136,7 +136,7 @@ class TestSteamClient(TestCase):
     def test_make_offer_url(self):
         partner_account_id = '32384925'
         partner_token = '7vqRtBpC'
-        sample_trade_url = 'https://steamcommunity.com/tradeoffer/new/?partner=' + partner_account_id + '&token=' + partner_token
+        sample_trade_url = f'https://steamcommunity.com/tradeoffer/new/?partner={partner_account_id}&token={partner_token}'
         client = SteamClient(self.credentials.api_key)
         client.login(self.credentials.login, self.credentials.password, self.steam_guard_file)
         client._session.request('HEAD', 'http://steamcommunity.com')

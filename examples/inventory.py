@@ -45,7 +45,7 @@ for item in inventory.values():
         item_amounts[item['market_name']] += 1
     else:
         item_amounts[item['market_name']] = 1
-print('Done reading inventory for game: {}'.format(app_id))
+print(f'Done reading inventory for game: {app_id}')
 
 #dump all the information into inventory_(app_id)_(context_id).json file
 print('Saving information....')

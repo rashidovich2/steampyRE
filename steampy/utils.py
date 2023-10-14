@@ -56,7 +56,7 @@ def steam_id_to_account_id(steam_id: str) -> str:
 def parse_price(price: str) -> Decimal:
     pattern = '\D?(\\d*)(\\.|,)?(\\d*)'
     tokens = re.search(pattern, price, re.UNICODE)
-    decimal_str = tokens.group(1) + '.' + tokens.group(3)
+    decimal_str = f'{tokens.group(1)}.{tokens.group(3)}'
     return Decimal(decimal_str)
 
 
@@ -214,19 +214,23 @@ def get_buy_orders_from_node(node: Tag) -> dict:
             "quantity": int(qnt_price_raw[0].strip()),
             "price": qnt_price_raw[1].strip(),
             "item_name": order.a.text,
-            "icon_url": order.select(f"img[class=market_listing_item_img]")[0].attrs["src"].rsplit('/', 2)[-2],
-            "game_name": order.select("span[class=market_listing_game_name]")[0].text
+            "icon_url": order.select("img[class=market_listing_item_img]")[0]
+            .attrs["src"]
+            .rsplit('/', 2)[-2],
+            "game_name": order.select("span[class=market_listing_game_name]")[
+                0
+            ].text,
         }
         buy_orders_dict[order["order_id"]] = order
     return buy_orders_dict
 
 
 def get_listing_id_to_assets_address_from_html(html: str) -> dict:
-    listing_id_to_assets_address = {}
     regex = "CreateItemHoverFromContainer\( [\w]+, 'mylisting_([\d]+)_[\w]+', ([\d]+), '([\d]+)', '([\d]+)', [\d]+ \);"
-    for match in re.findall(regex, html):
-        listing_id_to_assets_address[match[0]] = [str(match[1]), match[2], match[3]]
-    return listing_id_to_assets_address
+    return {
+        match[0]: [str(match[1]), match[2], match[3]]
+        for match in re.findall(regex, html)
+    }
 
 
 def get_description_key(item: dict) -> str:
@@ -243,7 +247,7 @@ def get_key_value_from_url(url: str, key: str, case_sensitive: bool = True) -> s
 
 def load_credentials():
     dirname = os.path.dirname(os.path.abspath(__file__))
-    with open(dirname + '/../secrets/credentials.pwd', 'r') as f:
+    with open(f'{dirname}/../secrets/credentials.pwd', 'r') as f:
         return [Credentials(line.split()[0], line.split()[1], line.split()[2]) for line in f]
 
 
