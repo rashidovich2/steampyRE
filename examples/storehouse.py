@@ -27,7 +27,7 @@ def main():
                 offer_id = offer['tradeofferid']
                 num_accepted_items = len(offer['items_to_receive'])
                 client.accept_trade_offer(offer_id)
-                print('Accepted trade offer {}. Got {} items'.format(offer_id, num_accepted_items))
+                print(f'Accepted trade offer {offer_id}. Got {num_accepted_items} items')
         time.sleep(60)
 
 

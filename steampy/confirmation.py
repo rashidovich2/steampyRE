@@ -49,34 +49,39 @@ class ConfirmationExecutor:
         params['cid'] = confirmation.data_confid
         params['ck'] = confirmation.nonce
         headers = {'X-Requested-With': 'XMLHttpRequest'}
-        return self._session.get(self.CONF_URL + '/ajaxop', params=params, headers=headers).json()
+        return self._session.get(
+            f'{self.CONF_URL}/ajaxop', params=params, headers=headers
+        ).json()
 
     def _get_confirmations(self) -> List[Confirmation]:
-        confirmations = []
         confirmations_page = self._fetch_confirmations_page()
-        if confirmations_page.status_code == 200:
-            confirmations_json = json.loads(confirmations_page.text)
-            for conf in confirmations_json['conf']:
-                data_confid = conf['id']
-                nonce = conf['nonce']
-                confirmations.append(Confirmation(data_confid, nonce))
-            return confirmations
-        else:
+        if confirmations_page.status_code != 200:
             raise ConfirmationExpected
+        confirmations_json = json.loads(confirmations_page.text)
+        confirmations = []
+        for conf in confirmations_json['conf']:
+            data_confid = conf['id']
+            nonce = conf['nonce']
+            confirmations.append(Confirmation(data_confid, nonce))
+        return confirmations
 
     def _fetch_confirmations_page(self) -> requests.Response:
         tag = Tag.CONF.value
         params = self._create_confirmation_params(tag)
         headers = {'X-Requested-With': 'com.valvesoftware.android.steam.community'}
-        response = self._session.get(self.CONF_URL + '/getlist', params=params, headers=headers)
+        response = self._session.get(
+            f'{self.CONF_URL}/getlist', params=params, headers=headers
+        )
         if 'Steam Guard Mobile Authenticator is providing incorrect Steam Guard codes.' in response.text:
             raise InvalidCredentials('Invalid Steam Guard file')
         return response
 
     def _fetch_confirmation_details_page(self, confirmation: Confirmation) -> str:
-        tag = 'details' + confirmation.data_confid
+        tag = f'details{confirmation.data_confid}'
         params = self._create_confirmation_params(tag)
-        response = self._session.get(self.CONF_URL + '/details/' + confirmation.data_confid, params=params)
+        response = self._session.get(
+            f'{self.CONF_URL}/details/{confirmation.data_confid}', params=params
+        )
         return response.json()['html']
 
     def _create_confirmation_params(self, tag_string: str) -> dict:

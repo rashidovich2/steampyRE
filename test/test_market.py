@@ -14,7 +14,7 @@ class TestMarket(TestCase):
     def setUpClass(cls):
         cls.credentials = load_credentials()[0]
         dirname = os.path.dirname(os.path.abspath(__file__))
-        cls.steam_guard_file = dirname + '/../secrets/Steamguard.txt'
+        cls.steam_guard_file = f'{dirname}/../secrets/Steamguard.txt'
 
     def test_get_price(self):
         client = SteamClient(self.credentials.api_key)
@@ -54,20 +54,26 @@ class TestMarket(TestCase):
         client.login(self.credentials.login, self.credentials.password, self.steam_guard_file)
         game = GameOptions.DOTA2
         inventory = client.get_my_inventory(game)
-        asset_id_to_sell = None
-        for asset_id, item in inventory.items():
-            if item.get("marketable") == 1:
-                asset_id_to_sell = asset_id
-                break
+        asset_id_to_sell = next(
+            (
+                asset_id
+                for asset_id, item in inventory.items()
+                if item.get("marketable") == 1
+            ),
+            None,
+        )
         self.assertIsNotNone(asset_id_to_sell, "You need at least 1 marketable item to pass this test")
         response = client.market.create_sell_order(asset_id_to_sell, game, "10000")
         self.assertTrue(response["success"])
         sell_listings = client.market.get_my_market_listings()["sell_listings"]
-        listing_to_cancel = None
-        for listing in sell_listings.values():
-            if listing["description"]["id"] == asset_id_to_sell:
-                listing_to_cancel = listing["listing_id"]
-                break
+        listing_to_cancel = next(
+            (
+                listing["listing_id"]
+                for listing in sell_listings.values()
+                if listing["description"]["id"] == asset_id_to_sell
+            ),
+            None,
+        )
         self.assertIsNotNone(listing_to_cancel)
         response = client.market.cancel_sell_order(listing_to_cancel)
 

@@ -23,8 +23,8 @@ class LoginExecutor:
         url = '/'.join([SteamUrl.API_URL, service, endpoint, version])
         # all requests from the login page use the same "Referer" and "Origin" values
         headers = {
-            "Referer": SteamUrl.COMMUNITY_URL + '/',
-            "Origin": SteamUrl.COMMUNITY_URL
+            "Referer": f'{SteamUrl.COMMUNITY_URL}/',
+            "Origin": SteamUrl.COMMUNITY_URL,
         }
         if method.upper() == 'GET':
             return self.session.get(url, params=params, headers=headers)
@@ -47,7 +47,9 @@ class LoginExecutor:
         encrypted_password = self._encrypt_password(rsa_params)
         rsa_timestamp = rsa_params['rsa_timestamp']
         request_data = self._prepare_login_request_data(encrypted_password, rsa_timestamp)
-        return self.session.post(SteamUrl.COMMUNITY_URL + '/login/dologin', data=request_data)
+        return self.session.post(
+            f'{SteamUrl.COMMUNITY_URL}/login/dologin', data=request_data
+        )
 
     def set_sessionid_cookies(self):
         community_domain = SteamUrl.COMMUNITY_URL[8:]
@@ -80,7 +82,9 @@ class LoginExecutor:
         if current_number_of_repetitions < maximal_number_of_repetitions:
             return self._fetch_rsa_params(current_number_of_repetitions + 1)
 
-        raise ApiException('Could not obtain rsa-key. Status code: %s' % response.status_code)
+        raise ApiException(
+            f'Could not obtain rsa-key. Status code: {response.status_code}'
+        )
 
     def _encrypt_password(self, rsa_params: dict) -> bytes:
         return b64encode(encrypt(self.password.encode('utf-8'), rsa_params['rsa_key']))
@@ -124,4 +128,4 @@ class LoginExecutor:
             self.session.post(url, parameters)
 
     def _fetch_home_page(self, session: Session) -> Response:
-        return session.post(SteamUrl.COMMUNITY_URL + '/my/home/')
+        return session.post(f'{SteamUrl.COMMUNITY_URL}/my/home/')

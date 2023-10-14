@@ -17,11 +17,10 @@ def load_steam_guard(steam_guard: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: Parsed json data as a dictionary of strings (both key and value).
     """
-    if os.path.isfile(steam_guard):
-        with open(steam_guard, 'r') as f:
-            return json.loads(f.read(), parse_int=str)
-    else:
+    if not os.path.isfile(steam_guard):
         return json.loads(steam_guard, parse_int=str)
+    with open(steam_guard, 'r') as f:
+        return json.loads(f.read(), parse_int=str)
 
 
 def generate_one_time_code(shared_secret: str, timestamp: int = None) -> str:
